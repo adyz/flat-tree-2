@@ -3,7 +3,7 @@ import flattenObject from "../flatten";
 import NativeCheckbox from "../Tree/NativeCheckbox";
 
 interface FlatTreeProps {
-  nodes: any[];
+  nodes: any[]; 
 }
 
 interface FlatTreeState {
@@ -33,29 +33,45 @@ export default class FlatTree extends React.Component<
     });
   }
 
-  public expand = (e: any) => {
+  public toggle = (e: any) => {
     const index = e.currentTarget.dataset.index;
 
-    this.setState(prevState => {
-      const isExpanded = prevState.nodes[index].expanded;
+    function testIncludes(list, item) {
+      const answer = false;
 
-      Object.keys(prevState.nodes).forEach(nodeKey => {
+      for (let listItem of list) {
+        if (item.startsWith(listItem)) {
+          answer = true;
+          break;
+        }
+      }
+      return answer;
+    }
+
+    this.setState(prevState => {
+      const { nodes } = prevState;
+      const isExpanded = nodes[index].expanded;
+      const ignoreList = [];
+
+      for (let nodeKey of Object.keys(nodes)) {
         // Find all children (the children are the ones that start with this key) and toggle them
         if (
-          prevState.nodes[nodeKey].path.startsWith(index) &&
-          prevState.nodes[nodeKey].path !== index
+          nodes[nodeKey].path.startsWith(index) &&
+          nodes[nodeKey].path !== index &&
+          !testIncludes(ignoreList, nodeKey)
         ) {
-          prevState.nodes[nodeKey].visible = !isExpanded;
-        }
+          if (!isExpanded && nodes[nodeKey].expanded === false) {
+            ignoreList.push(nodeKey);
+          }
 
-        // Toggle this node
-        if (prevState.nodes[nodeKey].path === index) {
-          prevState.nodes[nodeKey].expanded = !isExpanded;
+          nodes[nodeKey].visible = !isExpanded;
         }
-      });
+      };
+
+      nodes[index].expanded = !isExpanded;
 
       return {
-        nodes: prevState.nodes
+        nodes: nodes
       };
     });
   };
@@ -93,8 +109,7 @@ export default class FlatTree extends React.Component<
       const len = parentPath.split("-").length;
 
       let all = true;
-
-      Object.keys(this.state.nodes).forEach(nodeKey => {
+      for (let nodeKey of Object.keys(this.state.nodes)) {
         const path = this.state.nodes[nodeKey].path;
         const pathLen = path.split("-").length;
         if (pathLen === len + 1 && path.startsWith(index)) {
@@ -104,11 +119,10 @@ export default class FlatTree extends React.Component<
           ) {
           } else {
             all = false;
-            return false;
+            break;
           }
         }
-      });
-
+      };
       if (all) {
         this.setNodeWithState(index, isChecked);
       } else {
@@ -123,11 +137,7 @@ export default class FlatTree extends React.Component<
     const index = currentTarget.dataset.index;
     const isChecked = currentTarget.checked ? 1 : 0;
 
-    const parentIndex = this.getParentIndex(index);
-
-    if (parentIndex !== "0") {
-      this.checkSiblings(parentIndex, isChecked, index);
-    }
+    this.checkSiblingsIfParent(isChecked, index)
 
     this.setState(prevState => {
       Object.keys(prevState.nodes).forEach(nodeKey => {
@@ -157,10 +167,10 @@ export default class FlatTree extends React.Component<
             nodes[nodes[nodeKey].parent] === undefined
               ? true
               : nodes[nodeKey].visible
-              ? nodes[nodes[nodeKey].parent].expanded
-                ? true
-                : false
-              : false;
+                ? nodes[nodes[nodeKey].parent].expanded
+                  ? true
+                  : false
+                : false;
           return (
             superDisplay && (
               <div key={nodeKey}>
@@ -171,7 +181,7 @@ export default class FlatTree extends React.Component<
                   }}
                 >
                   {nodes[nodeKey].children ? (
-                    <button data-index={nodeKey} onClick={this.expand}>
+                    <button data-index={nodeKey} onClick={this.toggle}>
                       {nodes[nodeKey].expanded ? "-" : "+"}
                     </button>
                   ) : (

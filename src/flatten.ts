@@ -12,7 +12,7 @@ const flattenObject = function(obj: any) {
           children: true,
           parent: prevIndex,
           expanded: false,
-          visible: true,
+          visible: false,
           state: 0
         };
 
@@ -24,7 +24,7 @@ const flattenObject = function(obj: any) {
           children: false,
           parent: prevIndex,
           expanded: false,
-          visible: true,
+          visible: false,
           state: 0
         };
       }
