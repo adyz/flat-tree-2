@@ -105,14 +105,13 @@ export default class FlatTree extends React.Component<
       this.checkSiblingsIfParent(isChecked, index);
     } else {
 
-      const parentPath = this.state.nodes[index].path;
-      const len = parentPath.split("-").length;
+      const parentPathLength = this.state.nodes[index].path.split("-").length;
 
       let all = true;
       for (let nodeKey of Object.keys(this.state.nodes)) {
         const path = this.state.nodes[nodeKey].path;
         const pathLen = path.split("-").length;
-        if (pathLen === len + 1 && path.startsWith(index)) {
+        if (pathLen === parentPathLength + 1 && path.startsWith(index)) {
           if (
             this.state.nodes[nodeKey].state === isChecked ||
             nodeKey === currentNode
@@ -140,7 +139,7 @@ export default class FlatTree extends React.Component<
     this.checkSiblingsIfParent(isChecked, index)
 
     this.setState(prevState => {
-      Object.keys(prevState.nodes).forEach(nodeKey => {
+      for (let nodeKey of Object.keys(prevState.nodes)) {
         if (prevState.nodes[nodeKey].path.startsWith(index + "-")) {
           prevState.nodes[nodeKey].state = isChecked;
         }
@@ -148,7 +147,7 @@ export default class FlatTree extends React.Component<
         if (prevState.nodes[nodeKey].path === index) {
           prevState.nodes[nodeKey].state = isChecked;
         }
-      });
+      };
 
       return {
         nodes: prevState.nodes
