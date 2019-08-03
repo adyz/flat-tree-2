@@ -96,11 +96,11 @@ export default class VirtualTree<T extends {}> extends React.Component<Props<T>,
           foundAtLeaseAChildren = true;
         } else {
           if (foundAtLeaseAChildren) {
-            console.log('Will break here');
+            console.log('Will break here', keyI);
             break;
           }
-          // console.log('Skipped me');
         }
+        
       } else {
         pushTheNodes(expanded, path);
       }
