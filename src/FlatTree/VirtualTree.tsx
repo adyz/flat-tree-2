@@ -1,18 +1,6 @@
 import * as React from 'react';
 import flattenObject, { Tree } from '../flatten';
-// import * as _ from 'lodash';
 import { CellMeasurer, CellMeasurerCache, List } from 'react-virtualized';
-
-// tslint:disable-next-line:no-any
-function pickBy(object: any, predicate: any = (v: any) => v) {
-  const obj = {};
-  for (const [key, value] of Object.entries(object)) {
-    if (predicate(value)) {
-      obj[key] = value;
-    }
-  }
-  return obj;
-}
 
 // In this example, average cell height is assumed to be about 50px.
 // This value will be used for the initial `Grid` layout.
@@ -48,7 +36,7 @@ export default class VirtualTree<T extends {}> extends React.Component<Props<T>,
   list: any;
   objectKeys: string[] = [];
   // tslint:disable-next-line:no-any
-  memo: {[key: string]: string[]} = {};
+  memo: { [key: string]: string[] } = {};
   constructor(props: Props<T>) {
     super(props);
 
@@ -70,36 +58,53 @@ export default class VirtualTree<T extends {}> extends React.Component<Props<T>,
     });
   }
 
-  public getVisibleNodeKeys(nodes: { [key: string]: Spread<T> }) {
+  public getVisibleNodeKeys(nodes: { [key: string]: Spread<T> }, keyToStartFrom?: string) {
     let visibleNodes: string[] = [];
     let collapsedNodes: string[] = [];
 
-    // if (this.objectKeys.length < 1) {
-    //     // Cache the keys
-    //     this.objectKeys = Object.keys(nodes);
-    // }
+    function startsWith(haystack: string, needle: string) {
+      return haystack.lastIndexOf(needle, 0) === 0;
+    }
 
-    this.objectKeys = Object.keys(nodes);
-
-    for (let keyI = 0; keyI < this.objectKeys.length;  keyI++) {
-      const currNode = nodes[this.objectKeys[keyI]];
+    function pushTheNodes(expanded: boolean, path: string) {
       let found = false;
       for (let i = 0; i < collapsedNodes.length; i++) {
         // if current node path starts with any of the collapsed items
-        if (currNode.path.lastIndexOf(collapsedNodes[i], 0) === 0) {
+        if (startsWith(path, collapsedNodes[i])) {
           found = true;
           break;
         }
       }
-
       if (!found) {
-        if (currNode.expanded) {
-          visibleNodes.push(currNode.path);
+        if (expanded) {
+          visibleNodes.push(path);
         } else {
-          collapsedNodes.push(currNode.path);
+          collapsedNodes.push(path);
         }
-        
+
       }
+    }
+
+    const objectKeys = Object.keys(nodes);
+    let foundAtLeaseAChildren = false;
+
+    for (let keyI = 0; keyI < objectKeys.length; keyI++) {
+      const {expanded, path} = nodes[objectKeys[keyI]];
+      if (keyToStartFrom !== undefined) {
+        if (path !== keyToStartFrom && startsWith(path, keyToStartFrom)) {
+          pushTheNodes(expanded, path);
+          foundAtLeaseAChildren = true;
+        } else {
+          if (foundAtLeaseAChildren) {
+            console.log('Will break here');
+            break;
+          }
+          // console.log('Skipped me');
+        }
+      } else {
+        pushTheNodes(expanded, path);
+      }
+
     }
 
     // tslint:disable-next-line:forin
@@ -121,7 +126,7 @@ export default class VirtualTree<T extends {}> extends React.Component<Props<T>,
     //     } else {
     //       collapsedNodes.push(currNode.path);
     //     }
-        
+
     //   }
 
     // }
@@ -132,19 +137,18 @@ export default class VirtualTree<T extends {}> extends React.Component<Props<T>,
   }
 
   public expandOrCollapse(key: string) {
-    
-    this.setState((prevState: State<T>)  => {
+
+    this.setState((prevState: State<T>) => {
       const { newNodes } = { ...prevState };
       const newExpanded = !newNodes[key].expanded;
       newNodes[key].expanded = newExpanded;
       if (newExpanded) {
         // tslint:disable-next-line:no-any
-        const pickedNodes = pickBy(newNodes, (newNode: any) => newNode.path.startsWith(key) && newNode.path !== key);
-        const pickedVisibleKeys: string[] = this.getVisibleNodeKeys(pickedNodes);
-        const visibleKeys = [...prevState.visibleKeys, ...pickedVisibleKeys].sort();
-        console.log({key, pickedNodes, pickedVisibleKeys, visibleKeys});
+        const pickedVisibleKeys = this.getVisibleNodeKeys(newNodes, key);
+        const mergedVisibleKeys = [...pickedVisibleKeys, ...prevState.visibleKeys];
+        mergedVisibleKeys.sort();
         return {
-          visibleKeys,
+          visibleKeys: mergedVisibleKeys,
           newNodes
         };
       } else {
@@ -156,7 +160,7 @@ export default class VirtualTree<T extends {}> extends React.Component<Props<T>,
           newNodes
         };
       }
-      
+
     });
   }
 

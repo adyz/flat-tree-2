@@ -8,7 +8,7 @@ import { data as originalNodes } from './randomData';
 
 const App = () => (
   <div>
-    <h2>Start editing to see some magic dadt</h2>
+    <h2>Start editing to see some magic aaa</h2>
 
     <VirtualTree nodes={originalNodes}>
       {({ style, node, index, expandOrCollapse }) => {

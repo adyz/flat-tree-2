@@ -99,7 +99,7 @@ function createRandomizedData() {
   // tslint:disable-next-line:no-any
   var dataR: any[] = [];
 
-  for (var i = 0; i < 120; i++) {
+  for (var i = 0; i < 80000; i++) {
     dataR.push(createRandomizedItem(0));
   }
 
@@ -113,7 +113,7 @@ function createRandomizedItem(depth: number): RandomData {
   item.name = name;
   item.id = name;
 
-  var numChildren = depth < 13 ? Math.floor(Math.random() * 5) : 0;
+  var numChildren = depth < 3 ? Math.floor(Math.random() * 5) : 0;
   for (var i = 0; i < numChildren; i++) {
     item.children.push(createRandomizedItem(depth + 1));
   }
