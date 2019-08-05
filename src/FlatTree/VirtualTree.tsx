@@ -28,6 +28,8 @@ interface Props<T> {
     style: any;
     node: Spread<T>;
     expandOrCollapse: (key: string) => void;
+    selectNode: (key: string, newCheckState: 0 | 1 | 2) => void;
+    
   }) => React.ReactNode;
 }
 
@@ -50,6 +52,7 @@ export default class VirtualTree<T extends {}> extends React.Component<Props<T>,
     };
 
     this.expandOrCollapse = this.expandOrCollapse.bind(this);
+    this.onSelectNode = this.onSelectNode.bind(this);
     this._rowRenderer = this._rowRenderer.bind(this);
   }
   componentDidMount() {
@@ -140,6 +143,27 @@ export default class VirtualTree<T extends {}> extends React.Component<Props<T>,
     });
   }
 
+  public onSelectNode(key: string, newCheckState: 0 | 1 | 2) {
+    console.log('onSelect', key, newCheckState);
+    this.setState((prevState: State<T>) => {
+      const { newNodes } = { ...prevState };
+      newNodes[key].checkedState = newCheckState;
+
+      if (newNodes[key].hasChildren) {
+        for (let newNodeKey in newNodes) {
+          if (startsWith(newNodeKey, key)) {
+            newNodes[newNodeKey].checkedState = newCheckState;
+          }
+        }
+      }
+      
+      return {
+        ...prevState,
+        newNodes        
+      };
+    },            () => this.list.forceUpdateGrid());
+  }
+
   _noRowsRenderer() {
     return <p>No rows</p>;
   }
@@ -177,7 +201,8 @@ export default class VirtualTree<T extends {}> extends React.Component<Props<T>,
           index,
           parent,
           node: this.state.newNodes[this.state.visibleKeys[index]],
-          expandOrCollapse: this.expandOrCollapse
+          expandOrCollapse: this.expandOrCollapse,
+          selectNode: this.onSelectNode
         })}
       </CellMeasurer>
     );

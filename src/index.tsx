@@ -3,15 +3,16 @@ import { render } from 'react-dom';
 
 import VirtualTree from './FlatTree/VirtualTree';
 import './index.css';
-import { data as originalNodes } from './randomData';
-// import { data as originalNodes } from './customData';
+// import { data as originalNodes } from './randomData';
+import NativeCheckbox from './FlatTree/Checkbox';
+import { data as originalNodes } from './customData';
 
 const App = () => (
   <div>
     <h2>Start editing to see some magic aaa</h2>
 
     <VirtualTree nodes={originalNodes}>
-      {({ style, node, index, expandOrCollapse }) => {
+      {({ style, node, index, selectNode, expandOrCollapse }) => {
         return (
           <div style={style}>
             <div
@@ -38,9 +39,19 @@ const App = () => (
                     {node.expanded ? '-' : '+'}
                   </button>
                 ) : (
-                  <button>*</button>
-                )}
-                <label htmlFor={node.path}>{node.name}</label>
+                    <button>*</button>
+                  )}
+                <label htmlFor={node.path}>
+                  <NativeCheckbox 
+                    checked={node.checkedState === 1}
+                    indeterminate={node.checkedState === 2}
+                    onChange={e =>
+                      selectNode(node.path, e.currentTarget.checked ? 1 : 0)
+                    }
+                    id={node.path} 
+                  />
+                  {node.name} {JSON.stringify(node.checkedState)}
+                </label>
               </p>
               <p
                 style={{

@@ -9,6 +9,7 @@ export type Tree= {
   // tslint:disable-next-line:no-any
   children: any[]; 
   expanded: boolean;
+  checkedState: 0 | 1 | 2
 };
 
 function flattenObject<T>(nodes: T[]) {
@@ -25,7 +26,8 @@ function flattenObject<T>(nodes: T[]) {
           path: myKey,
           hasChildren: true,
           parent: prevIndex,
-          children: []
+          children: [],
+          checkedState: 0
         };
 
         rec(node.children, myKey, newNesting);
@@ -36,7 +38,8 @@ function flattenObject<T>(nodes: T[]) {
           path: myKey,
           hasChildren: false,
           parent: prevIndex,
-          children: []
+          children: [],
+          checkedState: 0
         };
       }
     });
