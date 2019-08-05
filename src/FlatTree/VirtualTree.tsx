@@ -10,6 +10,10 @@ const cache = new CellMeasurerCache({
   fixedWidth: true
 });
 
+function startsWith(haystack: string, needle: string) {
+  return haystack.lastIndexOf(needle, 0) === 0;
+}
+
 type Spread<T> = T & Tree;
 interface Props<T> {
   nodes: T[];
@@ -62,10 +66,6 @@ export default class VirtualTree<T extends {}> extends React.Component<Props<T>,
     let visibleNodes: string[] = [];
     let collapsedNodes: string[] = [];
 
-    function startsWith(haystack: string, needle: string) {
-      return haystack.lastIndexOf(needle, 0) === 0;
-    }
-
     function pushTheNodes(expanded: boolean, path: string) {
       let found = false;
       for (let i = 0; i < collapsedNodes.length; i++) {
@@ -106,30 +106,6 @@ export default class VirtualTree<T extends {}> extends React.Component<Props<T>,
       }
 
     }
-
-    // tslint:disable-next-line:forin
-    // for (let nodeKey in nodes) {
-    //   const currNode = nodes[nodeKey];
-
-    //   let found = false;
-    //   for (let i = 0; i < collapsedNodes.length; i++) {
-    //     // if current node path starts with any of the collapsed items
-    //     if (currNode.path.lastIndexOf(collapsedNodes[i], 0) === 0) {
-    //       found = true;
-    //       break;
-    //     }
-    //   }
-
-    //   if (!found) {
-    //     if (currNode.expanded) {
-    //       visibleNodes.push(currNode.path);
-    //     } else {
-    //       collapsedNodes.push(currNode.path);
-    //     }
-
-    //   }
-
-    // }
 
     visibleNodes.push(...collapsedNodes);
     visibleNodes.sort();
