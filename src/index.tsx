@@ -3,9 +3,9 @@ import { render } from 'react-dom';
 
 import VirtualTree from './FlatTree/VirtualTree';
 import './index.css';
-// import { data as originalNodes } from './randomData';
+import { data as originalNodes } from './randomData';
 import NativeCheckbox from './FlatTree/Checkbox';
-import { data as originalNodes } from './customData';
+// import { data as originalNodes } from './customData';
 
 const App = () => (
   <div>
@@ -50,7 +50,7 @@ const App = () => (
                     }
                     id={node.path} 
                   />
-                  {node.name} {JSON.stringify(node.checkedState)}
+                  {node.path} / {node.i}
                 </label>
               </p>
               <p

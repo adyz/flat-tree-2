@@ -9,15 +9,20 @@ export type Tree= {
   // tslint:disable-next-line:no-any
   children: any[]; 
   expanded: boolean;
-  checkedState: 0 | 1 | 2
+  checkedState: 0 | 1 | 2,
+  i: number
 };
+
+function idOf(i: number): string {
+  return String.fromCharCode(i + 97);
+}
 
 function flattenObject<T>(nodes: T[]) {
   const toReturn = {} as { [key: string]: T & Tree };
 
   function rec(restNodes: T[], prevIndex: string, nesting: number = 0) {
     restNodes.forEach((node: T & Tree, i: number) => {
-      const myKey = prevIndex + '-' + i;
+      const myKey = prevIndex + '-' + idOf(i);
       const newNesting = nesting + 1;
       if (node.children && node.children.length > 0) {
         toReturn[myKey] = {
@@ -27,7 +32,8 @@ function flattenObject<T>(nodes: T[]) {
           hasChildren: true,
           parent: prevIndex,
           children: [],
-          checkedState: 0
+          checkedState: 0,
+          i
         };
 
         rec(node.children, myKey, newNesting);
@@ -39,13 +45,14 @@ function flattenObject<T>(nodes: T[]) {
           hasChildren: false,
           parent: prevIndex,
           children: [],
-          checkedState: 0
+          checkedState: 0,
+          i
         };
       }
     });
   }
 
-  rec(nodes, '0');
+  rec(nodes, 'a');
 
   return toReturn;
 }
