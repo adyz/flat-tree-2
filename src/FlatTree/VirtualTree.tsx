@@ -11,7 +11,7 @@ const cache = new CellMeasurerCache({
 });
 
 function startsWith(haystack: string, needle: string) {
-  return haystack.lastIndexOf(needle, 0) === 0;
+  return haystack.startsWith(needle);
 }
 
 type Spread<T> = T & Tree;
@@ -29,7 +29,7 @@ interface Props<T> {
     node: Spread<T>;
     expandOrCollapse: (key: string) => void;
     selectNode: (key: string, newCheckState: 0 | 1 | 2) => void;
-    
+
   }) => React.ReactNode;
 }
 
@@ -59,86 +59,90 @@ export default class VirtualTree<T extends {}> extends React.Component<Props<T>,
     const flatNodes = flattenObject(this.props.nodes);
     const visibleKeys = this.getVisibleNodeKeys(flatNodes);
 
+    // console.log({originalNodes: this.props.nodes, flatNodes, visibleKeys});
+
     this.setState({
       visibleKeys,
       newNodes: flatNodes
     });
   }
 
-  public getVisibleNodeKeys(nodes: { [key: string]: Spread<T> }, keyToStartFrom?: string) {
-    let visibleNodes: string[] = [];
-    let collapsedNodes: string[] = [];
-
-    function pushTheNodes(expanded: boolean, path: string) {
-      let found = false;
-      for (let i = 0; i < collapsedNodes.length; i++) {
-        // if current node path starts with any of the collapsed items
-        if (startsWith(path, collapsedNodes[i])) {
-          found = true;
-          break;
-        }
-      }
-      if (!found) {
-        if (expanded) {
-          visibleNodes.push(path);
-        } else {
-          collapsedNodes.push(path);
-        }
-
+  public getVisibleNodeKeys(flatNodes: { [key: string]: Spread<T> }) {
+    const accumulator = [];
+    // tslint:disable-next-line: forin
+    for (const nodeKey in flatNodes) {
+      const node = flatNodes[nodeKey];
+      const parent = flatNodes[node.parent];
+      const superDisplay =
+        parent === undefined
+          ? true
+          : node.visible
+            ? parent.expanded
+            : false;
+      if (superDisplay) {
+        accumulator.push(node.path);
       }
     }
 
-    const objectKeys = Object.keys(nodes);
-    let foundAtLeaseAChildren = false;
-
-    for (let keyI = 0; keyI < objectKeys.length; keyI++) {
-      const {expanded, path} = nodes[objectKeys[keyI]];
-      if (keyToStartFrom !== undefined) {
-        if (path !== keyToStartFrom && startsWith(path, keyToStartFrom)) {
-          pushTheNodes(expanded, path);
-          foundAtLeaseAChildren = true;
-        } else {
-          if (foundAtLeaseAChildren) {
-            console.log('Will break here', keyI);
-            break;
-          }
-        }
-        
-      } else {
-        pushTheNodes(expanded, path);
-      }
-
-    }
-
-    visibleNodes.push(...collapsedNodes);
-    visibleNodes.sort();
-    return visibleNodes;
+    return accumulator;
   }
 
   public expandOrCollapse(key: string) {
 
-    this.setState((prevState: State<T>) => {
-      const { newNodes } = { ...prevState };
-      const newExpanded = !newNodes[key].expanded;
-      newNodes[key].expanded = newExpanded;
-      if (newExpanded) {
-        // tslint:disable-next-line:no-any
-        const pickedVisibleKeys = this.getVisibleNodeKeys(newNodes, key);
-        const mergedVisibleKeys = [...pickedVisibleKeys, ...prevState.visibleKeys];
-        mergedVisibleKeys.sort();
-        return {
-          visibleKeys: mergedVisibleKeys,
-          newNodes
-        };
-      } else {
-        console.log('I should show hide the kids to this: ', key);
-        // tslint:disable-next-line:max-line-length
-        const visibleKeys = prevState.visibleKeys.filter((visibleKey: string) => !visibleKey.startsWith(key) || visibleKey === key);
-        return {
-          visibleKeys,
-          newNodes
-        };
+    function testIncludes(list: string[], item: string) {
+      let answer = false;
+  
+      for (const listItem of list) {
+        if (item.startsWith(listItem)) {
+          answer = true;
+          break;
+        }
       }
+      return answer;
+    }
+
+    this.setState((prevState: State<T>) => {
+      const { newNodes } = prevState;
+      const isExpanded = newNodes[key].expanded;
+      const ignoreList = [];
+      const accumulator = [];
+      const keys = Object.keys(newNodes);
+
+      for (const nodeKey of keys) {
+        // Find all children (the children are the ones that start with this key) and toggle them
+        if (
+          newNodes[nodeKey].path.startsWith(key) &&
+          newNodes[nodeKey].path !== key &&
+          !testIncludes(ignoreList, nodeKey)
+        ) {
+          if (!isExpanded && newNodes[nodeKey].expanded === false) {
+            ignoreList.push(nodeKey);
+          }
+
+          newNodes[nodeKey].visible = !isExpanded;
+        }
+      }
+
+      newNodes[key].expanded = !isExpanded;
+
+      for (const nodeKey of keys) {
+        const node = newNodes[nodeKey];
+        const parent = newNodes[node.parent];
+        const superDisplay =
+          parent === undefined
+            ? true
+            : node.visible
+              ? parent.expanded
+              : false;
+        if (superDisplay) {
+          accumulator.push(node.path);
+        }
+      }
+
+      return {
+        visibleKeys: accumulator,
+        newNodes
+      };
 
     });
   }
@@ -156,12 +160,12 @@ export default class VirtualTree<T extends {}> extends React.Component<Props<T>,
           }
         }
       }
-      
+
       return {
         ...prevState,
-        newNodes        
+        newNodes
       };
-    },            () => this.list.forceUpdateGrid());
+    }, () => this.list.forceUpdateGrid());
   }
 
   _noRowsRenderer() {
@@ -216,14 +220,14 @@ export default class VirtualTree<T extends {}> extends React.Component<Props<T>,
           ref={ref => {
             this.list = ref;
           }}
-          height={540}
+          height={940}
           overscanRowCount={5}
           noRowsRenderer={this._noRowsRenderer}
           rowCount={this.state.visibleKeys.length}
           deferredMeasurementCache={cache}
           rowHeight={cache.rowHeight}
           rowRenderer={this._rowRenderer}
-          width={800}
+          width={900}
         />
       )
     );
