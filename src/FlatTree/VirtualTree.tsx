@@ -67,24 +67,35 @@ export default class VirtualTree<T extends {}> extends React.Component<Props<T>,
 
   public getVisibleNodeKeys(nodes: { [key: string]: Spread<T> }, keyToStartFrom?: string) {
     let visibleNodes: string[] = [];
-    let collapsedNodes: string[] = [];
+    // let collapsedNodes: string[] = [];
+
+    let myCollapsedNodes: {[key: string]: string[]} = {};
 
     function pushTheNodes(expanded: boolean, path: string) {
+      const mySplit = path.split('-');
+      const myPath = mySplit[1];
       let found = false;
-      for (let i = 0; i < collapsedNodes.length; i++) {
-        // if current node path starts with any of the collapsed items
-        if (startsWith(path, collapsedNodes[i])) {
-          found = true;
-          break;
+
+      if (myCollapsedNodes[myPath] && myCollapsedNodes[myPath].length > 0 ) {
+        for (let i = 0; i < myCollapsedNodes[myPath].length; i++) {
+          // if current node path starts with any of the collapsed items
+          if (startsWith(path, myCollapsedNodes[myPath][i])) {
+            found = true;
+            break;
+          }
         }
       }
+    
       if (!found) {
         if (expanded) {
           visibleNodes.push(path);
         } else {
-          collapsedNodes.push(path);
+          if (myCollapsedNodes[myPath] && myCollapsedNodes[myPath].length > 0 ) {
+            myCollapsedNodes[myPath].push(path);
+          } else {
+            myCollapsedNodes[myPath] = [path];
+          }
         }
-
       }
     }
 
@@ -110,7 +121,10 @@ export default class VirtualTree<T extends {}> extends React.Component<Props<T>,
 
     }
 
-    visibleNodes.push(...collapsedNodes);
+    // tslint:disable-next-line: forin
+    for (const key in myCollapsedNodes) {
+      visibleNodes.push(...myCollapsedNodes[key]);
+    }
     visibleNodes.sort();
     return visibleNodes;
   }

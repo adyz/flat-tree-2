@@ -99,7 +99,7 @@ function createRandomizedData() {
   // tslint:disable-next-line:no-any
   var dataR: any[] = [];
 
-  for (var i = 0; i < 6320; i++) {
+  for (var i = 0; i < 12320; i++) {
     dataR.push(createRandomizedItem(0));
   }
 
