@@ -11,7 +11,7 @@ const App = () => (
   <div>
     <h2>Start editing to see some magic aaa</h2>
 
-    <VirtualTree allExpanded={true} nodes={originalNodes}>
+    <VirtualTree allExpanded={false} nodes={originalNodes}>
       {({ style, node, index, selectNode, expandOrCollapse }) => {
         return (
           <div style={style}>
