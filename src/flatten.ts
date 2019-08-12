@@ -17,9 +17,8 @@ function idOf(i: number): string {
   return String.fromCharCode(i + 97);
 }
 
-function flattenObject<T>(nodes: T[]) {
+function flattenObject<T>(nodes: T[], allExpanded?: boolean) {
   const toReturn = {} as { [key: string]: T & Tree };
-
   function rec(restNodes: T[], prevIndex: string, nesting: number = 0) {
     restNodes.forEach((node: T & Tree, i: number) => {
       const myKey = prevIndex + '-' + idOf(i);
@@ -33,7 +32,13 @@ function flattenObject<T>(nodes: T[]) {
           parent: prevIndex,
           children: [],
           checkedState: 0,
-          i
+          i,
+          expanded: typeof allExpanded !== 'undefined' ? 
+            allExpanded : 
+            typeof node.expanded !== 'undefined' ? 
+              node.expanded : 
+              true,
+
         };
 
         rec(node.children, myKey, newNesting);
@@ -46,7 +51,10 @@ function flattenObject<T>(nodes: T[]) {
           parent: prevIndex,
           children: [],
           checkedState: 0,
-          i
+          i,
+          expanded: true,
+          // coz expanded "true" it's faster 
+          // (will not go in the collapsed nodes to search into) and it does not mather (coz it has no children)
         };
       }
     });

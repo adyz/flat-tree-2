@@ -17,6 +17,7 @@ function startsWith(haystack: string, needle: string) {
 type Spread<T> = T & Tree;
 interface Props<T> {
   nodes: T[];
+  allExpanded?: boolean;
   children: (props: {
     isScrolling: boolean;
     isVisible: boolean;
@@ -56,7 +57,7 @@ export default class VirtualTree<T extends {}> extends React.Component<Props<T>,
     this._rowRenderer = this._rowRenderer.bind(this);
   }
   componentDidMount() {
-    const flatNodes = flattenObject(this.props.nodes);
+    const flatNodes = flattenObject(this.props.nodes, this.props.allExpanded);
     const visibleKeys = this.getVisibleNodeKeys(flatNodes);
 
     this.setState({
