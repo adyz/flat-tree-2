@@ -13,7 +13,14 @@ export type Tree= {
   i: number
 };
 
+let characterLimitWarnShown = false;
 function idOf(i: number): string {
+  
+  if (i > 65536 && characterLimitWarnShown === false) {
+    // TODO: Fix this
+    console.warn('You have to many root nodes for a browser to possibly compute, the order of nodes might not be good');
+    characterLimitWarnShown = true;
+  }
   return String.fromCharCode(i + 97);
 }
 
