@@ -1,5 +1,5 @@
 import * as React from 'react';
-import flattenObject, { Tree } from '../flatten';
+import flattenObject, { Tree } from './flatten';
 import { CellMeasurer, CellMeasurerCache, List } from 'react-virtualized';
 
 // In this example, average cell height is assumed to be about 50px.

@@ -14,14 +14,15 @@ export type Tree= {
 };
 
 let characterLimitWarnShown = false;
+const CHARS_LIMIT = 65536;
+const CHAR_START = 97;
 function idOf(i: number): string {
-  
-  if (i > 65536 && characterLimitWarnShown === false) {
+  if (i > CHARS_LIMIT && characterLimitWarnShown === false) {
     // TODO: Fix this
     console.warn('You have to many root nodes for a browser to possibly compute, the order of nodes might not be good');
     characterLimitWarnShown = true;
   }
-  return String.fromCharCode(i + 97);
+  return String.fromCharCode(i + CHAR_START);
 }
 
 function flattenObject<T>(nodes: T[], allExpanded?: boolean) {
